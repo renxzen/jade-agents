@@ -1,0 +1,22 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "java",
+			"name": "Launch Java Agents",
+			"request": "launch",
+			"mainClass": "jade.Boot",
+			"args" : [
+				"-Xmx512m", "-Xms512m",
+				"-Djava.class.path=lib/jade.jar",
+				"-Djava.class.path=lib/commons-codec-1.3.jar",
+				"-port", "10069",
+				// "-gui", //"host:test.HostAgent();",
+				"-agents", "host:test.HostAgent;"
+			],
+		}
+	]
+}
