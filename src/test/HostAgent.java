@@ -14,11 +14,13 @@ import jade.wrapper.PlatformController;
 import jade.lang.acl.ACLMessage;
 
 public class HostAgent extends Agent {
-	public static Integer numRestaurants = 6;
-	public static Integer numRandom = 5;
-	public static Integer numIterative = 5;
-	public static Integer numProbability = 5;
-	public static Integer numReiterative = 5;
+	public static final Integer[] capacities = { 10, 10, 15, 15, 5, 5 };
+	public static final Integer numRestaurants = 6;
+	public static final Integer numRandom = 5;
+	public static final Integer numIterative = 5;
+	public static final Integer numProbability = 5;
+	public static final Integer numReiterative = 5;
+	public static final Integer totalPersons = numRandom + numIterative + numProbability;
 	private Integer nightIndex = 1;
 	private List<String> restaurants = new ArrayList<String>();
 	private List<String> persons = new ArrayList<String>();
@@ -31,7 +33,7 @@ public class HostAgent extends Agent {
 			DFService.register(this, dfd);
 			PlatformController container = getContainerController();
 
-			String name = "";
+			String name;
 			AgentController ac;
 
 			for (int i = 0; i < numRestaurants; i++) {
@@ -55,10 +57,10 @@ public class HostAgent extends Agent {
 				ac.start();
 
 				// Probability Agent
-				// name = "Person_" + (numRandom + numIterative + i + 1);
-				// ac = container.createNewAgent(name, "test.ProbabilityAgent", null);
-				// persons.add(name);
-				// ac.start();
+				name = "Person_" + (numRandom + numIterative + i + 1);
+				ac = container.createNewAgent(name, "test.ProbabilityAgent", null);
+				persons.add(name);
+				ac.start();
 
 				// Reiterative Agent
 				// name = "Person_" + (numRandom + numIterative + numProbability + i + 1);
@@ -67,31 +69,30 @@ public class HostAgent extends Agent {
 				// ac.start();
 			}
 
-			ParallelBehaviour parallel = new ParallelBehaviour();
+			// ParallelBehaviour parallel = new ParallelBehaviour();
 
-			parallel.addSubBehaviour(new TickerBehaviour(this, 5000) {
-				@Override
-				public void onTick() {
-					ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-					message.setContent("NEW_NIGHT");
+			// parallel.addSubBehaviour(new TickerBehaviour(this, 10000) {
+			// 	@Override
+			// 	public void onTick() {
+			// 		ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+			// 		message.setContent("NEW_NIGHT");
 
-					for (String name: restaurants)
-						message.addReceiver(new AID(name, AID.ISLOCALNAME));
+			// 		for (String name : restaurants)
+			// 			message.addReceiver(new AID(name, AID.ISLOCALNAME));
 
-					for (String name: persons)
-						message.addReceiver(new AID(name, AID.ISLOCALNAME));
+			// 		for (String name : persons)
+			// 			message.addReceiver(new AID(name, AID.ISLOCALNAME));
 
-					send(message);
-					nightIndex++;
+			// 		send(message);
+			// 		nightIndex++;
 
-					System.out.println(String.format("\n[Night %d] Has started.", nightIndex));
-				}
-			});
+			// 		System.out.println(String.format("\n[Night %d] Has started.", nightIndex));
+			// 	}
+			// });
 
-			addBehaviour(parallel);
+			// addBehaviour(parallel);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
 }

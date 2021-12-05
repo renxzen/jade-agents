@@ -12,8 +12,8 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
 public class RandomAgent extends Agent {
+	private Integer[] capacities = HostAgent.capacities;
 	private Boolean messageSent = false;
-	private Integer[] capacities = {10,10,15,15,5,5};
 	private Random rand = new Random(System.currentTimeMillis());
 	private Integer selected = 0;
 	public Integer restaurantIdx = 0;
@@ -40,7 +40,7 @@ public class RandomAgent extends Agent {
 						message.addReceiver(new AID(restaurantName, AID.ISLOCALNAME));
 						send(message);
 
-						System.out.println(String.format("[%s] Calling %s for available slots.", getLocalName(), restaurantName));
+						// System.out.println(String.format("[%s] Calling %s for available slots.", getLocalName(), restaurantName));
 						messageSent = true;
 					}
 				}
@@ -57,13 +57,13 @@ public class RandomAgent extends Agent {
 
 						if (content.startsWith("SLOTS")) {
 							Integer slots = Integer.parseInt(content.replaceFirst("SLOTS_", ""));
-							System.out.println(String.format("[%s] Received %d free slots from %s.", getLocalName(), slots, sender));
+							// System.out.println(String.format("[%s] Received %d free slots from %s.", getLocalName(), slots, sender));
 
 							if (slots > 0) {
 								reply.setContent("RESERVE");
 								send(reply);
 
-								System.out.println(String.format("[%s] Making a random reservation at %s.", getLocalName(), sender));
+								// System.out.println(String.format("[%s] Making a random reservation at %s.", getLocalName(), sender));
 							} else {
 								selected = rand.nextInt(capacities.length);
 								messageSent = false;

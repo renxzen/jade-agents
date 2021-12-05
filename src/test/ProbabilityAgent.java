@@ -7,73 +7,107 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.domain.DFService;  
+import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
 public class ProbabilityAgent extends Agent {
-	private Boolean messageSent = false;
-	private Integer[] capacities = {10,10,15,15,5,5};
+	private Integer[] capacities = HostAgent.capacities;
+	private Boolean canRequest = false;
+	private Boolean pollSent = false;
+	private Boolean pollFinished = false;
 	private Random rand = new Random(System.currentTimeMillis());
 	private Integer selected = 0;
-	public Integer toPoll = 0;
+	private Integer toPoll = 0;
+	private Integer polledPeople = 0;
 	public Integer restaurantIdx = 0;
-	public Integer totalPersons = 10;
+	public Integer totalPersons = HostAgent.totalPersons;
+	public Integer personIdx = 0;
+	public Integer[] pollResponses = { 0, 0, 0, 0, 0, 0 };
 
 	@Override
-    public void setup() {
+	public void setup() {
+		personIdx = Integer.parseInt(getLocalName().replaceFirst("Person_", ""));
 		selected = rand.nextInt(capacities.length) + 1;
-		toPoll = 1 + rand.nextInt(totalPersons - 1);
+		toPoll = 1 + rand.nextInt(totalPersons - 2);
 
-        try {
-            DFAgentDescription description = new DFAgentDescription();
-            description.setName(getAID());
-            DFService.register(this, description);
+		try {
+			DFAgentDescription description = new DFAgentDescription();
+			description.setName(getAID());
+			DFService.register(this, description);
 
-            ParallelBehaviour parallel = new ParallelBehaviour();
+			ParallelBehaviour parallel = new ParallelBehaviour();
 
-            parallel.addSubBehaviour(new TickerBehaviour(this, 100) {
-                @Override
-                protected void onTick() {
-					// Poll toPoll people
-					// Random sort array of 0 to totalPersons
-					Integer[] sorted = new Integer[totalPersons];
-					for (int i = 0; i < totalPersons; i++) {
-						sorted[i] = i;
+			parallel.addSubBehaviour(new TickerBehaviour(this, 100) {
+				@Override
+				protected void onTick() {
+					if (!pollSent) {
+						// Random sort array of 0 to totalPersons excluding .this agent
+						Integer[] toPollIdx = new Integer[totalPersons - 1];
+
+						for (int i = 0; i < totalPersons - 2; i++)
+							if (i != personIdx)
+								toPollIdx[i] = i;
+
+						for (int i = 0; i < totalPersons - 2; i++) {
+							int j = rand.nextInt(totalPersons - 2 - i);
+							int temp = toPollIdx[i];
+							toPollIdx[i] = toPollIdx[i + j];
+							toPollIdx[i + j] = temp;
+						}
+
+						// First toPoll integers from array are selected
+						for (int i = 0; i < toPoll; i++) {
+							ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+							String personName = "Person_" + toPollIdx[i];
+							msg.addReceiver(new AID(personName, AID.ISLOCALNAME));
+							msg.setContent("POLL");
+							send(msg);
+
+							// System.out.println(String.format("[%s] Sending poll to %s.", getLocalName(), personName));
+						}
+
+						pollSent = true;
 					}
-					for (int i = 0; i < totalPersons; i++) {
-						int j = rand.nextInt(totalPersons - i);
-						int temp = sorted[i];
-						sorted[i] = sorted[i + j];
-						sorted[i + j] = temp;
+
+					if (polledPeople == toPoll && !pollFinished) {
+						pollFinished = true;
+						// Make calculations of probability
+
+						System.out.println(String.format("[%s] Polling finished.", getLocalName()));
+
+						for (int i = 0; i < pollResponses.length; i++) {
+							System.out.println(String.format("[%s] Poll results: Restaurant_%d - %d.", getLocalName(), i + 1, pollResponses[i]));
+						}
+
+						// Flag of calculations have been made
+
+						// canRequest = true;
+						// polledPeople = 0;
+						// toPoll = 1 + rand.nextInt(totalPersons - 1);
 					}
-			
-					// First toPoll integers from array are selected
 
-					// When toPoll responses have arrived, make calculations of probability
-					// Flag of calculations have been made
-
-					if (!messageSent) {
+					if (canRequest) {
 						// First index of probability
 
 						String restaurantName = "Restaurant_" + selected;
-	
+
 						ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
 						message.setContent("CHECK");
 						message.addReceiver(new AID(restaurantName, AID.ISLOCALNAME));
 						send(message);
 
 						System.out.println(String.format("[%s] Calling %s for available slots.", getLocalName(), restaurantName));
-						messageSent = true;
+						canRequest = false;
 					}
-                }
-            });
+				}
+			});
 
-            parallel.addSubBehaviour(new CyclicBehaviour(this) {
-                @Override
-                public void action() {
-                    ACLMessage message = receive();
-                    if (message != null) {
+			parallel.addSubBehaviour(new CyclicBehaviour(this) {
+				@Override
+				public void action() {
+					ACLMessage message = receive();
+					if (message != null) {
 						ACLMessage reply = message.createReply();
 						String content = message.getContent();
 						String sender = message.getSender().getLocalName();
@@ -89,38 +123,43 @@ public class ProbabilityAgent extends Agent {
 								System.out.println(String.format("[%s] Making a probability reservation at %s.", getLocalName(), sender));
 							} else {
 								selected = rand.nextInt(capacities.length);
-								messageSent = false;
+								canRequest = false;
 							}
 						}
 
-                        switch (content) {
-                            case "ADMITTED": 
+						if (content.startsWith("SELECTED")) {
+							Integer selection = Integer.parseInt(content.replaceFirst("SELECTED_", ""));
+							pollResponses[selection - 1]++;
+							polledPeople++;
+							// System.out.println(String.format("[%s] Poll: %s has selected Restaurant_%d.", getLocalName(), sender, selection));
+						}
+
+						switch (content) {
+							case "ADMITTED":
 								restaurantIdx = Integer.parseInt(sender.replaceFirst("Restaurant_", ""));
-                                break;
-                            case "REJECTED":
-								selected = rand.nextInt(capacities.length);
-								messageSent = false;
-                                break;
+								break;
+							case "REJECTED":
+								// selected = rand.nextInt(capacities.length);
+								// canRequest = true;
+								break;
 							case "POLL":
-								reply.setContent("SELECTED_"+selected);
+								reply.setContent("SELECTED_" + selected);
 								send(reply);
 								break;
 							case "NEW_NIGHT":
 								restaurantIdx = -1;
 								selected = rand.nextInt(capacities.length) + 1;
-								messageSent = false;
-                                break;
+								break;
 							default:
 								break;
-                        }
-                    }
-                }
-            });
+						}
+					}
+				}
+			});
 
-            addBehaviour(parallel);
-        }
-        catch(Exception e){
+			addBehaviour(parallel);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-    }
+	}
 }

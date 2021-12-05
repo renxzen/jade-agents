@@ -11,15 +11,13 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
 public class RestaurantAgent extends Agent {
-	private Integer[] capacities = {10,10,15,15,5,5};
     private Integer capacity;
-
     private List<String> customers = new ArrayList<String>();
 
 	@Override
     public void setup() {
-        capacity = capacities[Integer.parseInt(getLocalName().replaceFirst("Restaurant_", ""))-1];
-        System.out.println(String.format("[%s] Ready with %d slots", getLocalName(), capacity));
+        capacity = HostAgent.capacities[Integer.parseInt(getLocalName().replaceFirst("Restaurant_", ""))-1];
+        System.out.println(String.format("[%s] Ready with %d slots.", getLocalName(), capacity));
 
 		try {
             DFAgentDescription description = new DFAgentDescription();
@@ -57,7 +55,7 @@ public class RestaurantAgent extends Agent {
                                 }   
                                 break;
                             case "NEW_NIGHT":
-                                System.out.println(String.format("[%s] Ready with %d slots", getLocalName(), capacity));
+                                System.out.println(String.format("[%s] Ready with %d slots.", getLocalName(), capacity));
                                 customers.clear();
                                 break;
                             default:
