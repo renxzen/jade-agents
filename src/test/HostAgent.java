@@ -69,28 +69,37 @@ public class HostAgent extends Agent {
 				// ac.start();
 			}
 
-			// ParallelBehaviour parallel = new ParallelBehaviour();
+			// Send message to start polls once every agent has started
+			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+			message.setContent("START_POLL");
 
-			// parallel.addSubBehaviour(new TickerBehaviour(this, 10000) {
-			// 	@Override
-			// 	public void onTick() {
-			// 		ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-			// 		message.setContent("NEW_NIGHT");
+			for (String person : persons)
+				message.addReceiver(new AID(person, AID.ISLOCALNAME));
 
-			// 		for (String name : restaurants)
-			// 			message.addReceiver(new AID(name, AID.ISLOCALNAME));
+			send(message);
 
-			// 		for (String name : persons)
-			// 			message.addReceiver(new AID(name, AID.ISLOCALNAME));
+			ParallelBehaviour parallel = new ParallelBehaviour();
 
-			// 		send(message);
-			// 		nightIndex++;
+			parallel.addSubBehaviour(new TickerBehaviour(this, 10000000) {
+				@Override
+				public void onTick() {
+					ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+					message.setContent("NEW_NIGHT");
 
-			// 		System.out.println(String.format("\n[Night %d] Has started.", nightIndex));
-			// 	}
-			// });
+					for (String restaurant : restaurants)
+						message.addReceiver(new AID(restaurant, AID.ISLOCALNAME));
 
-			// addBehaviour(parallel);
+					for (String person : persons)
+						message.addReceiver(new AID(person, AID.ISLOCALNAME));
+
+					send(message);
+					nightIndex++;
+
+					System.out.println(String.format("\n[Night %d] Has started.", nightIndex));
+				}
+			});
+
+			addBehaviour(parallel);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -12,24 +12,24 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
 public class ProbabilityAgent extends Agent {
+	private Random rand = new Random(System.currentTimeMillis());
 	private Integer[] capacities = HostAgent.capacities;
 	private Boolean canRequest = false;
-	private Boolean pollSent = false;
-	private Boolean pollFinished = false;
-	private Random rand = new Random(System.currentTimeMillis());
 	private Integer selected = 0;
+	public Integer restaurantIdx = 0;
+	public Integer totalPersons = 0;
+	public Integer personIdx = 0;
+	
+	private Boolean startPoll = false;
+	private Boolean pollFinished = false;
 	private Integer toPoll = 0;
 	private Integer polledPeople = 0;
-	public Integer restaurantIdx = 0;
-	public Integer totalPersons = HostAgent.totalPersons;
-	public Integer personIdx = 0;
-	public Integer[] pollResponses = { 0, 0, 0, 0, 0, 0 };
+	private Integer[] pollResponses = { 0, 0, 0, 0, 0, 0 };
 
 	@Override
 	public void setup() {
 		personIdx = Integer.parseInt(getLocalName().replaceFirst("Person_", ""));
 		selected = rand.nextInt(capacities.length) + 1;
-		toPoll = 1 + rand.nextInt(totalPersons - 2);
 
 		try {
 			DFAgentDescription description = new DFAgentDescription();
@@ -41,25 +41,30 @@ public class ProbabilityAgent extends Agent {
 			parallel.addSubBehaviour(new TickerBehaviour(this, 100) {
 				@Override
 				protected void onTick() {
-					if (!pollSent) {
+					if (startPoll) {
 						// Random sort array of 0 to totalPersons excluding .this agent
 						Integer[] toPollIdx = new Integer[totalPersons - 1];
 
-						for (int i = 0; i < totalPersons - 2; i++)
-							if (i != personIdx)
-								toPollIdx[i] = i;
+						for (int i = 0; i < totalPersons - 1; i++) {
+							if (i >= personIdx - 1) toPollIdx[i] = i + 1;
+							else toPollIdx[i] = i;
 
-						for (int i = 0; i < totalPersons - 2; i++) {
-							int j = rand.nextInt(totalPersons - 2 - i);
+							// System.out.println(String.format("[%s] Considering %d.", getLocalName(), toPollIdx[i]+1));
+						}
+							
+
+						for (int i = 0; i < toPollIdx.length; i++) {
+							int j = rand.nextInt(toPollIdx.length - i);
 							int temp = toPollIdx[i];
 							toPollIdx[i] = toPollIdx[i + j];
 							toPollIdx[i + j] = temp;
+
+							// System.out.println(String.format("[%s] Shuffling %d.", getLocalName(), toPollIdx[i] + 1));
 						}
 
-						// First toPoll integers from array are selected
 						for (int i = 0; i < toPoll; i++) {
 							ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-							String personName = "Person_" + toPollIdx[i];
+							String personName = "Person_" + (toPollIdx[i] + 1);
 							msg.addReceiver(new AID(personName, AID.ISLOCALNAME));
 							msg.setContent("POLL");
 							send(msg);
@@ -67,24 +72,20 @@ public class ProbabilityAgent extends Agent {
 							// System.out.println(String.format("[%s] Sending poll to %s.", getLocalName(), personName));
 						}
 
-						pollSent = true;
+						startPoll = false;
 					}
 
 					if (polledPeople == toPoll && !pollFinished) {
+						System.out.println(String.format("[%s] Poll of %d people finished.", getLocalName(), toPoll));
+						// for (int i = 0; i < pollResponses.length; i++) System.out.println(String.format("[%s] Poll results: Restaurant_%d - %d.", getLocalName(), i + 1, pollResponses[i]));
 						pollFinished = true;
+						
+						
 						// Make calculations of probability
-
-						System.out.println(String.format("[%s] Polling finished.", getLocalName()));
-
-						for (int i = 0; i < pollResponses.length; i++) {
-							System.out.println(String.format("[%s] Poll results: Restaurant_%d - %d.", getLocalName(), i + 1, pollResponses[i]));
-						}
 
 						// Flag of calculations have been made
 
 						// canRequest = true;
-						// polledPeople = 0;
-						// toPoll = 1 + rand.nextInt(totalPersons - 1);
 					}
 
 					if (canRequest) {
@@ -141,6 +142,11 @@ public class ProbabilityAgent extends Agent {
 							case "REJECTED":
 								// selected = rand.nextInt(capacities.length);
 								// canRequest = true;
+								break;
+							case "START_POLL":
+								totalPersons = HostAgent.totalPersons;
+								toPoll = 1 + rand.nextInt(totalPersons - 2);
+								startPoll = true;
 								break;
 							case "POLL":
 								reply.setContent("SELECTED_" + selected);
