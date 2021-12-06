@@ -20,7 +20,7 @@ public class IterativeAgent extends Agent {
 
 	@Override
 	public void setup() {
-		selected = rand.nextInt(capacities.length) + 1;
+		selected = 1 + rand.nextInt(capacities.length - 1);
 
 		try {
 			DFAgentDescription description = new DFAgentDescription();
@@ -66,9 +66,9 @@ public class IterativeAgent extends Agent {
 								reply.setContent("RESERVE");
 								send(reply);
 
-								// System.out.println(String.format("[%s] Making a iterative reservation at %s.", getLocalName(), sender));
+								System.out.println(String.format("[%s] Making a iterative reservation at %s.", getLocalName(), sender));
 							} else {
-								selected = rand.nextInt(capacities.length);
+								selected = 1 + rand.nextInt(capacities.length - 1);
 								messageSent = false;
 							}
 						}
@@ -78,7 +78,7 @@ public class IterativeAgent extends Agent {
 								restaurantIdx = Integer.parseInt(sender.replaceFirst("Restaurant_", ""));
 								break;
 							case "REJECTED":
-								selected = rand.nextInt(capacities.length);
+								selected = 1 + rand.nextInt(capacities.length - 1);
 								messageSent = false;
 								break;
 							case "POLL":

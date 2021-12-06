@@ -14,7 +14,7 @@ import jade.wrapper.PlatformController;
 import jade.lang.acl.ACLMessage;
 
 public class HostAgent extends Agent {
-	public static final Integer[] capacities = { 10, 10, 15, 15, 5, 5 };
+	public static final Integer[] capacities = { 5, 3, 2, 3, 2, 5 };
 	public static final Integer numRestaurants = 6;
 	public static final Integer numRandom = 5;
 	public static final Integer numIterative = 5;
@@ -25,64 +25,47 @@ public class HostAgent extends Agent {
 	private List<String> restaurants = new ArrayList<String>();
 	private List<String> persons = new ArrayList<String>();
 
+	private AgentController agentController;
+	private PlatformController container;
+
 	@Override
 	public void setup() {
 		try {
 			DFAgentDescription dfd = new DFAgentDescription();
 			dfd.setName(getAID());
 			DFService.register(this, dfd);
-			PlatformController container = getContainerController();
+			container = getContainerController();
 
-			String name;
-			AgentController ac;
+			for (int i = 0; i < numRestaurants; i++) 
+				createAgent("Restaurant_" + (i + 1), "test.RestaurantAgent");
+			
+			for (int i = 0; i < numRandom; i++) 
+				createAgent("Person_" + (i + 1), "test.RandomAgent");
 
-			for (int i = 0; i < numRestaurants; i++) {
-				name = "Restaurant_" + (i + 1);
-				ac = container.createNewAgent(name, "test.RestaurantAgent", null);
-				restaurants.add(name);
-				ac.start();
-			}
+			for (int i = 0; i < numIterative; i++) 
+				createAgent("Person_" + (numRandom + i + 1), "test.IterativeAgent");
 
-			for (int i = 0; i < 5; i++) {
-				// Random Agent
-				name = "Person_" + (i + 1);
-				ac = container.createNewAgent(name, "test.RandomAgent", null);
-				persons.add(name);
-				ac.start();
+			for (int i = 0; i < numReiterative; i++) 
+				createAgent("Person_" + (numRandom + numIterative + i + 1), "test.ProbabilityAgent");
+			
+			// for (int i = 0; i < numRestaurants; i++) 
+			// 	createAgent("Person_" + (numRandom + numIterative + numProbability + i + 1), "test.ReierativeAgent");
 
-				// Iterative Agent
-				name = "Person_" + (numRandom + i + 1);
-				ac = container.createNewAgent(name, "test.IterativeAgent", null);
-				persons.add(name);
-				ac.start();
-
-				// Probability Agent
-				name = "Person_" + (numRandom + numIterative + i + 1);
-				ac = container.createNewAgent(name, "test.ProbabilityAgent", null);
-				persons.add(name);
-				ac.start();
-
-				// Reiterative Agent
-				// name = "Person_" + (numRandom + numIterative + numProbability + i + 1);
-				// ac = container.createNewAgent(name, "test.ReierativeAgent", null);
-				// persons.add(name);
-				// ac.start();
-			}
-
-			// Send message to start polls once every agent has started
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
 			message.setContent("START_POLL");
 
 			for (String person : persons)
 				message.addReceiver(new AID(person, AID.ISLOCALNAME));
-
 			send(message);
 
 			ParallelBehaviour parallel = new ParallelBehaviour();
 
-			parallel.addSubBehaviour(new TickerBehaviour(this, 10000000) {
+			parallel.addSubBehaviour(new TickerBehaviour(this, 20000) {
 				@Override
 				public void onTick() {
+					nightIndex++;
+					System.out.println(String.format("\n[Night %d] Has started.", nightIndex));
+
 					ACLMessage message = new ACLMessage(ACLMessage.INFORM);
 					message.setContent("NEW_NIGHT");
 
@@ -93,9 +76,6 @@ public class HostAgent extends Agent {
 						message.addReceiver(new AID(person, AID.ISLOCALNAME));
 
 					send(message);
-					nightIndex++;
-
-					System.out.println(String.format("\n[Night %d] Has started.", nightIndex));
 				}
 			});
 
@@ -103,5 +83,13 @@ public class HostAgent extends Agent {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void createAgent(String agentName, String classi) throws Exception {
+		agentController = container.createNewAgent(agentName, classi, null);
+		agentController.start();
+
+		if (agentName.startsWith("Person_")) persons.add(agentName);
+		if (agentName.startsWith("Restaurant_")) restaurants.add(agentName);
 	}
 }

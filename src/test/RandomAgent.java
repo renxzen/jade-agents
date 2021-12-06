@@ -20,7 +20,7 @@ public class RandomAgent extends Agent {
 	
 	@Override
 	public void setup() {
-		selected = rand.nextInt(capacities.length) + 1;
+		selected = 1 + rand.nextInt(capacities.length - 1);
 
 		try {
 			DFAgentDescription description = new DFAgentDescription();
@@ -63,9 +63,9 @@ public class RandomAgent extends Agent {
 								reply.setContent("RESERVE");
 								send(reply);
 
-								// System.out.println(String.format("[%s] Making a random reservation at %s.", getLocalName(), sender));
+								System.out.println(String.format("[%s] Making a random reservation at %s.", getLocalName(), sender));
 							} else {
-								selected = rand.nextInt(capacities.length);
+								selected = 1 + rand.nextInt(capacities.length - 1);
 								messageSent = false;
 							}
 						}
@@ -75,7 +75,7 @@ public class RandomAgent extends Agent {
 								restaurantIdx = Integer.parseInt(sender.replaceFirst("Restaurant_", ""));
 								break;
 							case "REJECTED":
-								selected = rand.nextInt(capacities.length);
+								selected = 1 + rand.nextInt(capacities.length - 1);
 								messageSent = false;
 								break;
 							case "POLL":
@@ -84,7 +84,7 @@ public class RandomAgent extends Agent {
 								break;
 							case "NEW_NIGHT":
 								restaurantIdx = -1;
-								selected = rand.nextInt(capacities.length) + 1;
+								selected = 1 + rand.nextInt(capacities.length - 1);
 								messageSent = false;
 								break;
 							default:

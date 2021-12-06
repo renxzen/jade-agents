@@ -37,51 +37,32 @@ Se trata de evaluar varios comportamientos posibles.
 Puede ilustrar su respuesta con un ejemplo.
 
 Pregunta 1: Comportamiento aleatorio. Cada persona elige un restaurante al azar entre los M posibles:
-
 (2 puntos) Qué resultaría en este caso, ¿el hecho de que cada agente sepa que todos los demás razonan como él?
 
 Pregunta 2
-Necesita calificación
-
 Continuando el problema de la pregunta 1. 
-
 Pregunta 2: iteración temporal: Cada persona elige un restaurante en función del resultado del día anterior, es decir, siempre elige el restaurante donde cenó la noche anterior. 
 (2 puntos) ¿Existe algún comportamiento que garantice obtener una reserva a la primera vez? ¿Bajo qué supuestos? ¿Cuál es su desventaja?
 
 Pregunta 3
-Necesita calificación
-
 Continuando el problema de la pregunta 1. 
-
 Pregunta 3: comportamiento "codicioso": Cada persona elige para maximizar la probabilidad de encontrar un lugar. Se calcula la probabilidad de obtener mesa y se elige el lugar más probable
-
 (2 puntos) ¿Qué resultaría en este caso el hecho de que cada agente sepa que todos los demás razonan como él?
 
 Pregunta 4
-Necesita calificación
-
 Continuando el problema de la pregunta 1. 
-
 Pregunta 4: deliberación: Cada agente hace una primera elección (por ejemplo, según el criterio de la pregunta 3), pregunta a los agentes P (elegidos al azar) qué hacen y corrige su elección.
 Consideraremos que la elección de P agentes es una encuesta representativa de la elección de N agentes.
 Esto equivale a considerar que cada agente pregunta a los demás qué están haciendo y elige según esto. 
-
 (2 puntos) ¿Cuál es el resultado de este comportamiento?
 
 Pregunta 5
-Necesita calificación
-
 Continuando el problema de la pregunta 1. 
-
 Pregunta 5: deliberación iterativa: Si consideramos que puede haber varias iteraciones de estas deliberaciones, ¿cuál es el resultado de un comportamiento con 2, luego 3 iteraciones?
-
 (2 puntos) ¿Podemos predecir el resultado asintótico cuando el número de iteraciones aumenta indefinidamente?
 
 Pregunta 6
-Necesita calificación
-
 Continuando el problema de la pregunta 1. 
-
 Se requiere que programe un sistema multiagente en JADE que genere N=20 agentes y M=6 restaurantes con capacidades (número de mesas) C={10,10,15,15,5,5} respectivamente que:
 
 (1 punto) Tenga 1 agente host que inicializa la cantidad de agentes y restaurantes, y cada minuto genere una "nueva noche" para que los agentes elijan lugares para cenar. 

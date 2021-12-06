@@ -24,12 +24,17 @@ public class ProbabilityAgent extends Agent {
 	private Boolean pollFinished = false;
 	private Integer toPoll = 0;
 	private Integer polledPeople = 0;
-	private Integer[] pollResponses = { 0, 0, 0, 0, 0, 0 };
+
+	private Integer[] pollResponses = new Integer[HostAgent.capacities.length];
+	private Float[] probabilities = new Float[HostAgent.capacities.length];
+	private Integer[] probabilityIndexes = new Integer[HostAgent.capacities.length];
+	private Integer probabilityIndex = 0;
 
 	@Override
 	public void setup() {
 		personIdx = Integer.parseInt(getLocalName().replaceFirst("Person_", ""));
-		selected = rand.nextInt(capacities.length) + 1;
+		selected = 1 + rand.nextInt(capacities.length - 1);
+		for (int i = 0; i < pollResponses.length; i++) pollResponses[i] = 0;
 
 		try {
 			DFAgentDescription description = new DFAgentDescription();
@@ -42,10 +47,9 @@ public class ProbabilityAgent extends Agent {
 				@Override
 				protected void onTick() {
 					if (startPoll) {
-						// Random sort array of 0 to totalPersons excluding .this agent
 						Integer[] toPollIdx = new Integer[totalPersons - 1];
 
-						for (int i = 0; i < totalPersons - 1; i++) {
+						for (int i = 0; i < toPollIdx.length; i++) {
 							if (i >= personIdx - 1) toPollIdx[i] = i + 1;
 							else toPollIdx[i] = i;
 
@@ -76,30 +80,47 @@ public class ProbabilityAgent extends Agent {
 					}
 
 					if (polledPeople == toPoll && !pollFinished) {
-						System.out.println(String.format("[%s] Poll of %d people finished.", getLocalName(), toPoll));
-						// for (int i = 0; i < pollResponses.length; i++) System.out.println(String.format("[%s] Poll results: Restaurant_%d - %d.", getLocalName(), i + 1, pollResponses[i]));
 						pollFinished = true;
-						
-						
-						// Make calculations of probability
 
-						// Flag of calculations have been made
+						// String toPrint = String.format("[%s] Poll of %d people finished.", getLocalName(), toPoll);
+						for (int i = 0; i < pollResponses.length; i++) {
+							probabilities[i] = 1 - ((float) pollResponses[i] / (float) capacities[i]);
+							// toPrint += String.format("\nRestaurant_%d: %d - %f", i + 1, pollResponses[i], probabilities[i]);
+						}
+						// System.out.println(toPrint);
 
-						// canRequest = true;
+						
+						for (int i = 0; i < probabilityIndexes.length; i++)
+							probabilityIndexes[i] = i;
+						
+						for (int i = 0; i < probabilities.length - 1; i++) {
+							for (int j = i + 1; j < probabilities.length; j++) {
+								if (probabilities[i] < probabilities[j]) {
+									float temp = probabilities[i];
+									probabilities[i] = probabilities[j];
+									probabilities[j] = temp;
+				
+									int tempo = probabilityIndexes[i];
+									probabilityIndexes[i] = probabilityIndexes[j];
+									probabilityIndexes[j] = tempo;
+								}
+							}
+						}
+
+						canRequest = true;
 					}
 
 					if (canRequest) {
-						// First index of probability
-
-						String restaurantName = "Restaurant_" + selected;
+						String restaurantName = "Restaurant_" + (probabilityIndexes[probabilityIndex] + 1);
 
 						ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
 						message.setContent("CHECK");
 						message.addReceiver(new AID(restaurantName, AID.ISLOCALNAME));
 						send(message);
-
-						System.out.println(String.format("[%s] Calling %s for available slots.", getLocalName(), restaurantName));
+						
 						canRequest = false;
+
+						// System.out.println(String.format("[%s] Calling %s for available slots.", getLocalName(), restaurantName));
 					}
 				}
 			});
@@ -115,7 +136,7 @@ public class ProbabilityAgent extends Agent {
 
 						if (content.startsWith("SLOTS")) {
 							Integer slots = Integer.parseInt(content.replaceFirst("SLOTS_", ""));
-							System.out.println(String.format("[%s] Received %d free slots from %s.", getLocalName(), slots, sender));
+							// System.out.println(String.format("[%s] Received %d free slots from %s.", getLocalName(), slots, sender));
 
 							if (slots > 0) {
 								reply.setContent("RESERVE");
@@ -123,7 +144,7 @@ public class ProbabilityAgent extends Agent {
 
 								System.out.println(String.format("[%s] Making a probability reservation at %s.", getLocalName(), sender));
 							} else {
-								selected = rand.nextInt(capacities.length);
+								selected = 1 + rand.nextInt(capacities.length - 1);
 								canRequest = false;
 							}
 						}
@@ -132,32 +153,37 @@ public class ProbabilityAgent extends Agent {
 							Integer selection = Integer.parseInt(content.replaceFirst("SELECTED_", ""));
 							pollResponses[selection - 1]++;
 							polledPeople++;
+
 							// System.out.println(String.format("[%s] Poll: %s has selected Restaurant_%d.", getLocalName(), sender, selection));
 						}
 
-						switch (content) {
-							case "ADMITTED":
-								restaurantIdx = Integer.parseInt(sender.replaceFirst("Restaurant_", ""));
-								break;
-							case "REJECTED":
-								// selected = rand.nextInt(capacities.length);
-								// canRequest = true;
-								break;
-							case "START_POLL":
-								totalPersons = HostAgent.totalPersons;
-								toPoll = 1 + rand.nextInt(totalPersons - 2);
-								startPoll = true;
-								break;
-							case "POLL":
-								reply.setContent("SELECTED_" + selected);
-								send(reply);
-								break;
-							case "NEW_NIGHT":
-								restaurantIdx = -1;
-								selected = rand.nextInt(capacities.length) + 1;
-								break;
-							default:
-								break;
+						if (content.startsWith("ADMITTED")) {
+							restaurantIdx = Integer.parseInt(sender.replaceFirst("Restaurant_", ""));
+						}
+
+						if (content.startsWith("REJECTED")) {
+							probabilityIndex++;
+						}
+
+						if (content.startsWith("START_POLL")) {
+							totalPersons = HostAgent.totalPersons;
+							toPoll = 1 + rand.nextInt(totalPersons - 2);
+							startPoll = true;
+						}
+
+						if (content.startsWith("POLL")) {
+							reply.setContent("SELECTED_" + selected);
+							send(reply);
+						}
+
+						if (content.startsWith("NEW_NIGHT")) {
+							selected = 1 + rand.nextInt(capacities.length - 1);
+							restaurantIdx = 0;
+
+							toPoll = 1 + rand.nextInt(totalPersons - 2);
+							startPoll = true;
+							polledPeople = 0;
+							pollFinished = false;
 						}
 					}
 				}
