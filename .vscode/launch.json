@@ -15,7 +15,7 @@
 				"-Djava.class.path=lib/commons-codec-1.3.jar",
 				"-port", "10069",
 				// "-gui", //"host:test.HostAgent();",
-				"-agents", "host:test.HostAgent;"
+				"-agents", "host:finalproject.agents.HostAgent;"
 			],
 		}
 	]
