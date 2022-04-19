@@ -5,11 +5,11 @@ import java.util.ArrayList;
 public class Simulation {
     private ArrayList<EntityAgent> aValider;
     private HostAgent hostAgent;
-    
+
     public Simulation(HostAgent ag) {
         aValider = new ArrayList<EntityAgent>();
         hostAgent = ag;
-        //dimension = 110;
+        // dimension = 110;
         /*place = new FoodSource[dimension][dimension];
         for(int i = 0; i < dimension; i++) {
             for(int j = 0; j < dimension; j++) {
@@ -18,7 +18,7 @@ public class Simulation {
             }
         }*/
     }
-    
+
     /*public boolean isOccupied(Position l, EntityAgent ag) {
         Species e = get_espece(ag);
         for(int i=0; i < species.size(); i++) {
@@ -35,30 +35,32 @@ public class Simulation {
         }
         return false;
     }*/
-    
-    public HostAgent getHostAgent() { return hostAgent; }
-    
-    //public FoodSource[][] getPlaces() { return place; }
-    
-    //public ArrayList<Species> get_agents() { return especes; }
-    
+
+    public HostAgent getHostAgent() {
+        return hostAgent;
+    }
+
+    // public FoodSource[][] getPlaces() { return place; }
+
+    // public ArrayList<Species> get_agents() { return especes; }
+
     /*public ArrayList<EntityAgent> get_agents(String famille) {
-        for(int i=0; i<species.size(); i++) 
-            if(species.get(i).getName().equals(famille)) 
+        for(int i=0; i<species.size(); i++)
+            if(species.get(i).getName().equals(famille))
                 return (species.get(i));
         return null;
     }*/
-    
-    //public int get_dimension() { return dimension; }
-    
+
+    // public int get_dimension() { return dimension; }
+
     /*public int get_nombreAgents() {
         int sum = 0;
-        for(int i=0; i<species.size(); i++) 
+        for(int i=0; i<species.size(); i++)
             sum += species.get(i).size();
         sum += aValider.size();
         return sum;
     }*/
-    
+
     /*public Species get_espece(EntityAgent agent) {
         for(int i=0; i < species.size(); i++) {
             Species e = species.get(i);
@@ -72,16 +74,18 @@ public class Simulation {
         }
         return null;
     }*/
-    
-    public void addAgent(EntityAgent ag) { aValider.add(ag); }
-    
+
+    public void addAgent(EntityAgent ag) {
+        aValider.add(ag);
+    }
+
     /*public void valider(AID agent,String famille) {
         EntityAgent cible = null;
         for(int i=0; i<aValider.size(); i++) if(aValider.get(i).getAID().equals(agent)) cible = aValider.get(i);
         if(cible!=null) {
             ArrayList<EntityAgent> liste = null;
             for(int i=0; i<species.size(); i++) {
-                if(species.get(i).getName().equals(famille)) 
+                if(species.get(i).getName().equals(famille))
                     liste = species.get(i);
             }
             if(liste==null) {
@@ -93,7 +97,7 @@ public class Simulation {
             aValider.remove(cible);
         }
     }*/
-    
+
     /*public void cloner(EntityAgent agent, int points, String famille) {
         int pts;
         Species e = get_espece(agent);
@@ -117,12 +121,12 @@ public class Simulation {
             catch (StaleProxyException e1) { e1.printStackTrace(System.err); }
         }
     }*/
-    
+
     /*public int get_stock(EntityAgent agent) {
         if(get_espece(agent)!=null) return get_espece(agent).getStock();
         else return -1;
     }*/
-    
+
     /*public boolean fill_stock(EntityAgent agent, int montant) {
         if(get_espece(agent)!=null) {
             get_espece(agent).fill(montant);
@@ -130,21 +134,21 @@ public class Simulation {
         }
         else return false;
     }*/
-    
+
     /*public int prelever(EntityAgent agent, int montant) {
         if(get_espece(agent)!=null) return get_espece(agent).empty(montant);
         else return -1;
     }*/
-    
+
     public void start() {
         /*for(int i=0; i<dimension; i++) {
             for(int j=0; j<dimension; j++)
                 place[i][j].start();
         }*/
         /*for (FoodSource source : sources)
-            source.start();*/
+        source.start();*/
     }
-    
+
     /*public ArrayList<EntityAgent> get_voisins(EntityAgent agent) {
         ArrayList<EntityAgent> liste = new ArrayList<EntityAgent>();
         for(int i=0; i < species.size(); i++) {
@@ -154,28 +158,28 @@ public class Simulation {
                 //Position caseAg = ag.get_actuel();
                 //Position perso = agent.get_actuel();
                 if (ag.position.isClose(agent.position, 5))
-                //if(proches(caseAg,perso)) 
+                //if(proches(caseAg,perso))
                     liste.add(ag);
             }
         }
         return liste;
     }*/
-    
+
     /*public ArrayList<FoodSource> get_casesVoisines(FoodSource actuel) {
         ArrayList<FoodSource> liste = new ArrayList<FoodSource>();
         for(int i=0; i<dimension; i++) {
             for(int j=0; j<dimension; j++) {
                 FoodSource test = place[i][j];
                 if (actuel.position.isClose(test.position, 5))
-                //if(proches(actuel,test)) 
+                //if(proches(actuel,test))
                     liste.add(test);
             }
         }
         return liste;
     }*/
-    
-    //public boolean proches(Lieu l1, Lieu l2) { return distance(l1,l2)<6; }
-	
+
+    // public boolean proches(Lieu l1, Lieu l2) { return distance(l1,l2)<6; }
+
     /*public double distance(Lieu l1, Lieu l2) {
         int x = l1.get_x() - l2.get_x();
         x = x*x;
@@ -185,7 +189,7 @@ public class Simulation {
         sum = Math.sqrt(sum);
         return sum;
     }*/
-    
+
     /*public void fight(EntityAgent ag) {
         ArrayList<EntityAgent> allies = new ArrayList<EntityAgent>();
         ArrayList<EntityAgent> ennemis = new ArrayList<EntityAgent>();
@@ -212,25 +216,25 @@ public class Simulation {
         }
         if(ennemis.size()>0) {
             int degats = forceEnnemis/allies.size();
-            for(EntityAgent allie:allies) 
+            for(EntityAgent allie:allies)
                 allie.take_damages((int)(Math.random()*degats));
             degats = forceAllies/ennemis.size();
             for(EntityAgent ennemi:ennemis) ennemi.take_damages((int)(Math.random()*degats));
         }
     }*/
-    
+
     /*public EntityAgent getAgent(AID aid) {
         for(int i=0; i<species.size(); i++) {
             ArrayList<EntityAgent> agents = species.get(i);//.getMembers();
             for(int j=0; j<agents.size(); j++) {
                 EntityAgent agent = agents.get(j);
-                if(agent.getAID().equals(aid)) 
+                if(agent.getAID().equals(aid))
                     return agent;
             }
         }
         return null;
     }*/
-    
+
     /*public void transfererFond(BaseAgent source, BaseAgent cible, int montant) {
         Espece e1 = get_espece(source);
         Espece e2 = get_espece(cible);

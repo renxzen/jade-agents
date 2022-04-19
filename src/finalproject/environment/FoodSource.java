@@ -5,78 +5,90 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.TreeMap;
+
 import javax.swing.Timer;
 
 public class FoodSource {
-    //public static ArrayList<FoodSource> ALL_FOOD_SOURCES = new ArrayList<FoodSource>();
-    public static TreeMap<String,FoodSource> ALL_FOOD_SOURCES = new TreeMap<String,FoodSource>();
+    // public static ArrayList<FoodSource> ALL_FOOD_SOURCES = new ArrayList<FoodSource>();
+    public static TreeMap<String, FoodSource> ALL_FOOD_SOURCES = new TreeMap<String, FoodSource>();
+
     public static void paintAllFoodSources(Graphics g) {
-        for (FoodSource source : ALL_FOOD_SOURCES.values())
-            source.paint(g);
+        for (FoodSource source : ALL_FOOD_SOURCES.values()) source.paint(g);
     }
-    
+
     public static FoodSource getSourceFromPosition(Position position) {
         if (position != null) {
             for (FoodSource source : ALL_FOOD_SOURCES.values()) {
-                //if (source.position.equals(position))
-                if (source.position.isClose(position))
-                    return source;
+                // if (source.position.equals(position))
+                if (source.position.isClose(position)) return source;
             }
         }
         return null;
     }
-    
+
     private String id;
     public Position position;
     private Timer timer;
     private int food;
-    
+
     public FoodSource() {
         id = "source_" + Functions.randomString();
         position = Functions.randomPosition();
         food = 5;
     }
-    
-    public int getFood() { return food; }
-    
-    public String getID() { return id; }
-    
+
+    public int getFood() {
+        return food;
+    }
+
+    public String getID() {
+        return id;
+    }
+
     public void start() {
-        if(timer == null) {
-            timer = new Timer(5000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) { food++; }
-            });
+        if (timer == null) {
+            timer =
+                    new Timer(
+                            5000,
+                            new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent evt) {
+                                    food++;
+                                }
+                            });
             timer.start();
-        }	
-    }    
-    
+        }
+    }
+
     @Override
-    public String toString() { return position.toString() + "(" + food+ ")"; }
-    
-    //public int get_nourriture() { return food; }
-    
+    public String toString() {
+        return position.toString() + "(" + food + ")";
+    }
+
+    // public int get_nourriture() { return food; }
+
     /*public void depose(Entity ag) {
         int points = ag.getPoints();
         food += points;
         ag.agent.doDelete();
     }*/
-    
+
     public int eat() {
         int value;
-        if(food > 5) {
+        if (food > 5) {
             value = 10;
             food = food - 5;
-        }
-        else {
+        } else {
             value = food;
             food = 0;
         }
         return value;
     }
-    
-    public boolean isEmpty() { return food <= 0; }
-    
+
+    public boolean isEmpty() {
+        return food <= 0;
+    }
+
     public void paint(Graphics g) {
         int x = position.getX();
         int y = position.getY();

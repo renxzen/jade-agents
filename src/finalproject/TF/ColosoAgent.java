@@ -4,24 +4,24 @@
  */
 package finalproject.TF;
 
-import static finalproject.agents.EntityAgent.STATES.EATING;
-import finalproject.agents.FieldAgent;
 import static finalproject.agents.FieldAgent.TYPE_MESSAGES.ENEMY;
 import static finalproject.agents.FieldAgent.TYPE_MESSAGES.SOURCE;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.Timer;
+
+import finalproject.agents.FieldAgent;
 import finalproject.classes.FieldUnity;
 import finalproject.environment.FoodSource;
-import static finalproject.environment.FoodSource.ALL_FOOD_SOURCES;
+
 import jade.lang.acl.ACLMessage;
 
-/**
- *
- * @author Usuario
- */
-public class G1_Aguirre_Tiglla extends FieldAgent {
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.Timer;
+
+/**
+ * @author G1: Joaquin Aguirre & Bruno Tiglla
+ */
+public class ColosoAgent extends FieldAgent {
     private Timer timer;
     int val = 10;
 
@@ -30,17 +30,20 @@ public class G1_Aguirre_Tiglla extends FieldAgent {
         super.init(); // To change body of generated methods, choose Tools | Templates.
 
         if (timer == null) {
-            timer = new Timer(2000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    if (val != 0) {
-                        if (getLocal().species.getStock() > 10) {
-                            status = STATES.REINFORCING;
-                            val = val - 1;
-                        }
-                    }
-                }
-            });
+            timer =
+                    new Timer(
+                            2000,
+                            new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent evt) {
+                                    if (val != 0) {
+                                        if (getLocal().species.getStock() > 10) {
+                                            status = STATES.REINFORCING;
+                                            val = val - 1;
+                                        }
+                                    }
+                                }
+                            });
             timer.start();
         }
     }
@@ -49,13 +52,11 @@ public class G1_Aguirre_Tiglla extends FieldAgent {
     protected void patrol() {
         super.patrol();
         FoodSource source = detectSources();
-        if (source != null)
-            sendMessageAllAllies(SOURCE, source);
+        if (source != null) sendMessageAllAllies(SOURCE, source);
         // sendMessageSomeAllies(SOURCE, source, 2);
 
         FieldUnity enemy = detectEnemies();
-        if (enemy != null)
-            sendMessageAllAllies(ENEMY, enemy);
+        if (enemy != null) sendMessageAllAllies(ENEMY, enemy);
         // sendMessageSomeAllies(ENEMY, enemy, 200);
     }
 

@@ -3,5 +3,12 @@
 		// "lib/**/*.jar",
 		"lib/commons-codec-1.3.jar",
 		"lib/jade.jar"
-	]
+	],
+	"google-java-format.extra-args": "--aosp",
+	"[java]": {
+	  "editor.defaultFormatter": "serikb.google-java-format",
+	  "editor.insertSpaces": true,
+	  "editor.tabSize": 4,
+	  "editor.detectIndentation": false
+	},
 }

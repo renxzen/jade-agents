@@ -12,6 +12,14 @@ import static finalproject.frame.EnvironmentPanel.BORDER_Y;
 import static finalproject.frame.EnvironmentPanel.MAX_X;
 import static finalproject.frame.EnvironmentPanel.MAX_Y;
 
+import finalproject.agents.FieldAgent;
+import finalproject.classes.FieldUnity;
+import finalproject.environment.FoodSource;
+import finalproject.environment.Position;
+
+import jade.core.AID;
+import jade.lang.acl.ACLMessage;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
@@ -20,21 +28,27 @@ import java.util.Set;
 
 import javax.swing.Timer;
 
-import finalproject.agents.FieldAgent;
-import finalproject.classes.FieldUnity;
-import finalproject.environment.FoodSource;
-import finalproject.environment.Position;
-import jade.core.AID;
-import jade.lang.acl.ACLMessage;
-
-public class G4_Damian extends FieldAgent {
+/**
+ * @author G4: Renzo Damián
+ */
+public class KageBunshinAgent extends FieldAgent {
     private Timer timerToChangeDirection;
     private Timer timerToReinforce;
     private Timer timerToReproduce;
 
+    private class Tuple<X, Y> {
+        public final X x;
+        public final Y y;
+
+        public Tuple(X x, Y y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
 
     private static enum DIRECTION {
-        RANDOM, LEADING
+        RANDOM,
+        LEADING
     };
 
     private DIRECTION currentDirection = DIRECTION.LEADING;
@@ -52,54 +66,63 @@ public class G4_Damian extends FieldAgent {
         getLocal().setGoal(getLocal().position);
 
         if (timerToChangeDirection == null) {
-            timerToChangeDirection = new Timer(2 * 1000, evt -> {
-                if (currentDirection == DIRECTION.LEADING && getLocal().hasArrived()) {
-                    if (!coordinates.isEmpty()) {
-                        Tuple<Integer, Integer> next = coordinates.iterator().next();
-                        getLocal().setGoal(new Position(next.x, next.y));
-                        coordinates.remove(next);
-                    } else {
-                        Random randy = new Random(System.currentTimeMillis());
-                        Integer posX = randy.nextInt(MAX_X - BORDER_X);
-                        Integer postY = randy.nextInt(MAX_Y - BORDER_Y);
-                        getLocal().setGoal(new Position(posX, postY));
+            timerToChangeDirection =
+                    new Timer(
+                            2 * 1000,
+                            evt -> {
+                                if (currentDirection == DIRECTION.LEADING
+                                        && getLocal().hasArrived()) {
+                                    if (!coordinates.isEmpty()) {
+                                        Tuple<Integer, Integer> next =
+                                                coordinates.iterator().next();
+                                        getLocal().setGoal(new Position(next.x, next.y));
+                                        coordinates.remove(next);
+                                    } else {
+                                        Random randy = new Random(System.currentTimeMillis());
+                                        Integer posX = randy.nextInt(MAX_X - BORDER_X);
+                                        Integer postY = randy.nextInt(MAX_Y - BORDER_Y);
+                                        getLocal().setGoal(new Position(posX, postY));
 
-                        System.out.println("Random position to " + posX + " " + postY);
-                    }
-                }
-            });
+                                        System.out.println(
+                                                "Random position to " + posX + " " + postY);
+                                    }
+                                }
+                            });
 
             timerToChangeDirection.start();
         }
 
-        if(timerToReproduce == null) {
-            timerToReproduce = new Timer(cloneTime * 30 * 1000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) { 
-                    status = STATES.REPRODUCING; 
-                    cloneTime++;
-                }
-            });
+        if (timerToReproduce == null) {
+            timerToReproduce =
+                    new Timer(
+                            cloneTime * 30 * 1000,
+                            new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent evt) {
+                                    status = STATES.REPRODUCING;
+                                    cloneTime++;
+                                }
+                            });
 
             timerToReproduce.start();
         }
 
         if (timerToReinforce == null) {
-            timerToReinforce = new Timer(2 * 1000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    if (!healed && getLocal().getPoints() < 3) {
-                        status = STATES.REINFORCING;
-                        healed = true;
-
-                    }
-                }
-            });
+            timerToReinforce =
+                    new Timer(
+                            2 * 1000,
+                            new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent evt) {
+                                    if (!healed && getLocal().getPoints() < 3) {
+                                        status = STATES.REINFORCING;
+                                        healed = true;
+                                    }
+                                }
+                            });
 
             timerToReinforce.start();
         }
-
-
     }
 
     @Override
@@ -119,16 +142,21 @@ public class G4_Damian extends FieldAgent {
         }
 
         FieldUnity enemy = detectEnemies();
-        if (enemy != null)
-            enemyDetected(enemy);
+        if (enemy != null) enemyDetected(enemy);
     }
 
     protected void foodDetected(FoodSource foodSource) {
         ACLMessage message = new ACLMessage(ACLMessage.INFORM);
         FieldUnity localUnit = getLocal();
 
-        message.setContent(SOURCE + "_" + foodSource.getID() + "_" + getLocal().position.getX() + "_"
-                + getLocal().position.getY());
+        message.setContent(
+                SOURCE
+                        + "_"
+                        + foodSource.getID()
+                        + "_"
+                        + getLocal().position.getX()
+                        + "_"
+                        + getLocal().position.getY());
 
         for (FieldUnity ally : getLocal().species.members.values())
             if (!ally.equals(localUnit))
@@ -143,7 +171,13 @@ public class G4_Damian extends FieldAgent {
         FieldUnity localUnit = getLocal();
 
         message.setContent(
-                ENEMY + "_" + enemy.getID() + "_" + getLocal().position.getX() + "_" + getLocal().position.getY());
+                ENEMY
+                        + "_"
+                        + enemy.getID()
+                        + "_"
+                        + getLocal().position.getX()
+                        + "_"
+                        + getLocal().position.getY());
 
         for (FieldUnity ally : localUnit.species.members.values())
             if (!ally.equals(localUnit))
@@ -168,9 +202,16 @@ public class G4_Damian extends FieldAgent {
         if (sources.size() > 0) {
             for (FoodSource foodSource : sources) {
                 ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-                message.setContent("COORDINATES_" + foodSource.position.getX() + "_" + foodSource.position.getY());
-                System.out
-                        .println("coordinates sent: " + foodSource.position.getX() + "_" + foodSource.position.getY());
+                message.setContent(
+                        "COORDINATES_"
+                                + foodSource.position.getX()
+                                + "_"
+                                + foodSource.position.getY());
+                System.out.println(
+                        "coordinates sent: "
+                                + foodSource.position.getX()
+                                + "_"
+                                + foodSource.position.getY());
                 send(message);
             }
         }
@@ -181,16 +222,13 @@ public class G4_Damian extends FieldAgent {
     protected void computeMessage(ACLMessage msg) {
         String[] content = msg.getContent().split("_");
 
-        if (status != PATROLING)
-            return;
+        if (status != PATROLING) return;
 
         if (content[0].equals(ENEMY.name())) {
             FieldUnity enemy = FieldUnity.ALL_UNITIES.get("entity_" + content[1]);
 
-            if (enemy == null)
-                return;
-            if (getLocal().position.distance(enemy.position) >= 500)
-                return;
+            if (enemy == null) return;
+            if (getLocal().position.distance(enemy.position) >= 500) return;
 
             getLocal().setGoal(enemy.position);
             getLocal().goal_enemy = enemy;
@@ -207,9 +245,10 @@ public class G4_Damian extends FieldAgent {
 
         if (content[0].equals("COORDINATES") && currentDirection == DIRECTION.LEADING) {
             System.out.println("Adding coordinate:" + content[2] + " " + content[3]);
-            coordinates.add(new Tuple<Integer, Integer>(Integer.valueOf(content[2]), Integer.valueOf(content[3])));
+            coordinates.add(
+                    new Tuple<Integer, Integer>(
+                            Integer.valueOf(content[2]), Integer.valueOf(content[3])));
         }
-
     }
 }
 

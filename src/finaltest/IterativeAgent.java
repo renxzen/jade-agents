@@ -1,4 +1,4 @@
-package test;
+package finaltest;
 
 import java.util.Random;
 
@@ -7,17 +7,17 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.domain.DFService;  
+import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
-public class RandomAgent extends Agent {
+public class IterativeAgent extends Agent {
 	private Integer[] capacities = HostAgent.capacities;
 	private Boolean messageSent = false;
 	private Random rand = new Random(System.currentTimeMillis());
 	private Integer selected = 0;
-	public Integer restaurantIdx = 0;
-	
+	private Integer restaurantIdx = 0;
+
 	@Override
 	public void setup() {
 		selected = 1 + rand.nextInt(capacities.length - 1);
@@ -33,8 +33,11 @@ public class RandomAgent extends Agent {
 				@Override
 				protected void onTick() {
 					if (!messageSent) {
+						if (restaurantIdx > 0)
+							selected = restaurantIdx;
+
 						String restaurantName = "Restaurant_" + selected;
-	
+
 						ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
 						message.setContent("CHECK");
 						message.addReceiver(new AID(restaurantName, AID.ISLOCALNAME));
@@ -63,7 +66,7 @@ public class RandomAgent extends Agent {
 								reply.setContent("RESERVE");
 								send(reply);
 
-								System.out.println(String.format("[%s] Making a random reservation at %s.", getLocalName(), sender));
+								System.out.println(String.format("[%s] Making a iterative reservation at %s.", getLocalName(), sender));
 							} else {
 								selected = 1 + rand.nextInt(capacities.length - 1);
 								messageSent = false;
@@ -71,7 +74,7 @@ public class RandomAgent extends Agent {
 						}
 
 						switch (content) {
-							case "ADMITTED": 
+							case "ADMITTED":
 								restaurantIdx = Integer.parseInt(sender.replaceFirst("Restaurant_", ""));
 								break;
 							case "REJECTED":
@@ -79,12 +82,10 @@ public class RandomAgent extends Agent {
 								messageSent = false;
 								break;
 							case "POLL":
-								reply.setContent("SELECTED_"+selected);
+								reply.setContent("SELECTED_" + selected);
 								send(reply);
 								break;
 							case "NEW_NIGHT":
-								restaurantIdx = -1;
-								selected = 1 + rand.nextInt(capacities.length - 1);
 								messageSent = false;
 								break;
 							default:
@@ -95,8 +96,7 @@ public class RandomAgent extends Agent {
 			});
 
 			addBehaviour(parallel);
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

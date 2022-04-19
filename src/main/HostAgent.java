@@ -7,12 +7,11 @@ import jade.wrapper.AgentController;
 import jade.wrapper.PlatformController;
 
 /**
- *
  * @author WillyUgarte
  */
 public class HostAgent extends Agent {
     public static int numero_aviones = 10;
-    
+
     @Override
     public void setup() {
         try {
@@ -20,17 +19,18 @@ public class HostAgent extends Agent {
             dfd.setName(getAID());
             DFService.register(this, dfd);
             PlatformController container = getContainerController();
-            //crear agente Torre
+            // crear agente Torre
             String localname = "Torre";
             AgentController ac = container.createNewAgent(localname, "main.TorreAgent", null);
             ac.start();
-            //crear agentes avion
+            // crear agentes avion
             for (int i = 0; i < numero_aviones; i++) {
-                localname = "Avion_" + (i+1);
+                localname = "Avion_" + (i + 1);
                 ac = container.createNewAgent(localname, "main.AvionAgent", null);
                 ac.start();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        catch(Exception e){ e.printStackTrace(); }
     }
 }
