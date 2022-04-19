@@ -1,6 +1,6 @@
-# Jade agents for Visual Studio
+# Jade Framework for Visual Studio
 
-Small configuration that runs jade framework in visual studio code with other small projects from my class at UPC.
+Small config that runs Jade Framework in Visual Studio Code with other small projects from my entire class at UPC. I love my friends.
 
 ## Info:
 
